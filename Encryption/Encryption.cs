@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,7 +9,7 @@ namespace Encryption
 {
     public class Encryption
     {
-        public char[,] encryptionTable = new Char[26,26]
+        private readonly char[,] encryptionTable = new char[26, 26]
              {
                 {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','X','R','S','T','U','V','W','X','Y','Z'},
                 {'B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','A'},
@@ -37,39 +38,89 @@ namespace Encryption
                 {'Y','Z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X'},
                 {'Z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y'}};
 
-        public void EncryptionKey(string plainText /*, string keyWord*/)
+
+        public int GetIndexOfxAxis(char x)
         {
-            string tempPlainText = plainText;
-
-            string storeChar = string.Empty;
-
-            foreach (char c in tempPlainText)
+            for (int i = 0; i < 26; i++)
             {
-                storeChar += c;
-
-                Console.WriteLine(storeChar);
-            }
-
-
-            string tempStore = "";
-
-            string storeCipher = "";
-
-            char[] tempCharArray;
-
-
-            char[,] tempArray = encryptionTable;
-
-            for (int i = 0; i < tempArray.GetLength(0); i++)
-            {
-                Console.WriteLine(i);
-
-                for (int j = 0; j < tempArray.GetLength(1); j++)
+                if (encryptionTable[i,0] == x)
                 {
-
+                    return i;
                 }
             }
+            return 0;
+        }
 
+        public int GetIndexOfyAxis(char y)
+        {
+            for (int i = 0; i < 26; i++)
+            {
+                if (encryptionTable[0, i] == y)
+                {
+                    return i;
+                }
+            }
+            return 0;
+        }
+
+        public char DecryptPlainText(char arrayLetter, char plainTextLetter)
+        {
+            int x = GetIndexOfxAxis(arrayLetter);
+            int y = GetIndexOfyAxis(plainTextLetter);
+
+            int endValue = x - y;
+
+            if (endValue < 0)
+            {
+                endValue += 26;
+            }
+
+            return encryptionTable[endValue, 0];
+        }
+
+        public char[] CreateCodeString(string plainText, string keyWord)
+        {
+            int maxKeyWordLength = plainText.Length / keyWord.Length + keyWord.Length;
+            
+            string finalString = "";
+
+            for (int i = 0; i < maxKeyWordLength; i++)
+            {
+                finalString += keyWord;
+            }
+
+            return finalString.ToCharArray();
+        }
+
+
+        public string EncryptPlainText(string plainText, string keyWord)
+        {
+            char[] plainTextArray = plainText.ToCharArray();
+            char[] codeTextArray = CreateCodeString(plainText, keyWord);
+            string encryptedMessage = "";
+            for (int i = 0; i < plainText.Length; i++)
+            {
+                int tmpKeyWordIndex = (int)GetIndexOfxAxis(codeTextArray[i]);
+                int tmpPlainTextIndex = (int)GetIndexOfyAxis(plainTextArray[i]);
+
+                encryptedMessage += encryptionTable[tmpKeyWordIndex, tmpPlainTextIndex];
+            }
+
+            return encryptedMessage;
+        }
+
+        public string DecryptEncryptedMessage(string encryptedMsg, char [] keyWord)
+        {
+
+            char[] encryptedMessageCharArray = encryptedMsg.ToCharArray();
+            char[] encryptionCodeText = keyWord;
+            string decryptedMessage = "";
+            for (int i = 0; i < encryptedMessageCharArray.Length; i++)
+            {
+                decryptedMessage += DecryptPlainText(encryptedMessageCharArray[i], encryptionCodeText[i]);
+            }
+
+            return decryptedMessage;
         }
     }
 }
